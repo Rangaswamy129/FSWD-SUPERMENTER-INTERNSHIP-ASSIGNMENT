@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Weather Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>Weather Dashboard</h1>
+
+<input type="text" id="cityInput" placeholder="Enter city name">
+<button onclick="getWeather()">Get Weather</button>
+
+<p id="loading"></p>
+<p id="error"></p>
+
+<div id="weatherResult">
+<h2 id="city"></h2>
+<p id="temperature"></p>
+<p id="condition"></p>
+<p id="humidity"></p>
+<p id="wind"></p>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
