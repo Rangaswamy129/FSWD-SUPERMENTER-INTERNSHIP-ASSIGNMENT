@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Task Dashboard</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    input, select {
+      padding: 8px;
+      margin: 5px;
+    }
+
+    button {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .task {
+      background: #eee;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+
+    .high { border-left: 5px solid red; }
+    .medium { border-left: 5px solid orange; }
+    .low { border-left: 5px solid green; }
+  </style>
+</head>
+<body>
+
+  <h1>📊 Task Dashboard</h1>
+
+  <div class="container">
+
+    <!-- Add Task -->
+    <input type="text" id="title" placeholder="Task title">
+    
+    <select id="category">
+      <option>Work</option>
+      <option>Personal</option>
+      <option>Study</option>
+    </select>
+
+    <select id="priority">
+      <option value="high">High</option>
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
+    </select>
+
+    <button onclick="addTask()">Add</button>
+
+    <hr>
+
+    <!-- Filter -->
+    <select onchange="filterTasks(this.value)">
+      <option value="all">All</option>
+      <option value="completed">Completed</option>
+      <option value="pending">Pending</option>
+    </select>
+
+    <div id="tasks"></div>
+
+  </div>
+
+<script>
+const API = "http://localhost:5000/api/tasks";
+let allTasks = [];
+
+// Load tasks
+async function loadTasks() {
+  const res = await fetch(API);
+  allTasks = await res.json();
+  displayTasks(allTasks);
+}
+
+// Display
+function displayTasks(tasks) {
+  const container = document.getElementById("tasks");
+  container.innerHTML = "";
+
+  tasks.forEach(task => {
+    const div = document.createElement("div");
+    div.className = `task ${task.priority || "low"}`;
+
+    div.innerHTML = `
+      <b>${task.title}</b> <br>
+      Category: ${task.category || "General"} <br>
+      Priority: ${task.priority || "low"} <br>
+      Status: ${task.completed ? "✅ Done" : "⏳ Pending"} <br><br>
+
+      <button onclick="toggle('${task._id}', ${task.completed})">Toggle</button>
+      <button onclick="remove('${task._id}')">Delete</button>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+// Add task
+async function addTask() {
+  const title = document.getElementById("title").value;
+  const category = document.getElementById("category").value;
+  const priority = document.getElementById("priority").value;
+
+  if (!title) return alert("Enter task");
+
+  await fetch(API, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ title, category, priority })
+  });
+
+  loadTasks();
+}
+
+// Toggle
+async function toggle(id, completed) {
+  await fetch(`${API}/${id}`, {
+    method: "PUT",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ completed: !completed })
+  });
+
+  loadTasks();
+}
+
+// Delete
+async function remove(id) {
+  await fetch(`${API}/${id}`, {
+    method: "DELETE"
+  });
+
+  loadTasks();
+}
+
+// Filter
+function filterTasks(type) {
+  if (type === "completed") {
+    displayTasks(allTasks.filter(t => t.completed));
+  } else if (type === "pending") {
+    displayTasks(allTasks.filter(t => !t.completed));
+  } else {
+    displayTasks(allTasks);
+  }
+}
+
+loadTasks();
+</script>
+
+</body>
+</html>

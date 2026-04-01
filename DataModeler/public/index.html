@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Blog App</title>
+</head>
+<body>
+
+<h1>📘 Blog App</h1>
+
+<!-- CREATE USER -->
+<h2>Create User</h2>
+<input id="uname" placeholder="Name">
+<input id="uemail" placeholder="Email">
+<input id="upass" placeholder="Password">
+<button onclick="createUser()">Create User</button>
+
+<hr>
+
+<!-- LOAD USERS -->
+<h2>Select User(after selecting user Post and Comment ID AUTo  filled .Otherwise it will show inavalid ID)</h2>
+<button onclick="getUsers()">Load Users</button>
+<ul id="userList"></ul>
+
+<hr>
+
+<!-- CREATE POST -->
+<h2>Create Post</h2>
+<input id="title" placeholder="Title">
+<input id="content" placeholder="Content">
+<input id="authorId" placeholder="Author ID (auto fill)">
+<button onclick="createPost()">Create Post</button>
+
+<hr>
+
+<!-- VIEW POSTS -->
+<h2>All Posts</h2>
+<button onclick="getPosts()">Load Posts</button>
+<ul id="postList"></ul>
+
+<hr>
+
+<!-- ADD COMMENT -->
+<h2>Add Comment</h2>
+<input id="commentText" placeholder="Comment">
+<input id="postId" placeholder="Post ID (auto fill)">
+<input id="userId" placeholder="User ID (auto fill)">
+<button onclick="addComment()">Add Comment</button>
+
+<hr>
+
+<!-- VIEW COMMENTS -->
+<h2>All Comments</h2>
+<button onclick="getComments()">Load Comments</button>
+<ul id="commentList"></ul>
+
+<script>
+
+/* USER */
+async function createUser() {
+  await fetch("/users", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      name: uname.value,
+      email: uemail.value,
+      password: upass.value
+    })
+  });
+  alert("User Created ");
+}
+
+/* LOAD USERS + SELECT */
+async function getUsers() {
+  const res = await fetch("/users");
+  const data = await res.json();
+
+  userList.innerHTML = "";
+
+  data.forEach(u => {
+    userList.innerHTML += `<button onclick="selectUser('${u._id}')">
+      ${u.name} (click)
+    </button>`;
+  });
+}
+
+function selectUser(id) {
+  document.getElementById("authorId").value = id;
+  document.getElementById("userId").value = id;
+}
+
+/* POST */
+async function createPost() {
+  try {
+    const res = await fetch("/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: title.value,
+        content: content.value,
+        author: authorId.value
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error);
+      return;
+    }
+
+    alert("Post Created ");
+
+  } catch (err) {
+    console.error(err);
+    alert("Error creating post");
+  }
+}
+
+/* LOAD POSTS + SELECT */
+async function getPosts() {
+  try {
+    const res = await fetch("/posts");
+    const data = await res.json();
+
+    postList.innerHTML = "";
+
+    data.forEach(p => {
+      postList.innerHTML += `<li onclick="selectPost('${p._id}')">
+        <b>${p.title}</b> (click)
+        <br>ID: ${p._id}
+      </li>`;
+    });
+
+  } catch (err) {
+    console.error(err);
+    alert("Error loading posts");
+  }
+}
+
+function selectPost(id) {
+  document.getElementById("postId").value = id;
+}
+
+/* COMMENT */
+async function addComment() {
+  try {
+    const res = await fetch("/comments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: commentText.value,
+        post: postId.value,
+        user: userId.value
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error);
+      return;
+    }
+
+    alert("Comment Added ");
+
+  } catch (err) {
+    console.error(err);
+    alert("Error adding comment");
+  }
+}
+
+/* GET COMMENTS */
+async function getComments() {
+  try {
+    const res = await fetch("/comments");
+    const data = await res.json();
+
+    commentList.innerHTML = "";
+
+    data.forEach(c => {
+      commentList.innerHTML += `<li>
+        ${c.text} (by ${c.user?.name || "Unknown"} on ${c.post?.title || "Unknown"})
+      </li>`;
+    });
+
+  } catch (err) {
+    console.error(err);
+    alert("Error loading comments");
+  }
+}
+
+</script>
+
+</body>
+</html>

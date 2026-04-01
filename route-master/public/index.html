@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bookstore</title>
+</head>
+<body>
+  <h1>📚 Bookstore App</h1>
+
+  <!-- Add Book -->
+  <h2>Add Book</h2>
+  <input type="text" id="title" placeholder="Book Title">
+  <input type="number" id="authorId" placeholder="Author ID">
+  <button onclick="addBook()">Add Book</button>
+
+  <!-- Book List -->
+  <h2>Books List</h2>
+  <button onclick="getBooks()">Load Books</button>
+  <ul id="bookList"></ul>
+
+  <script>
+    const API = "";
+
+    // GET books
+    async function getBooks() {
+      const res = await fetch(`/books`);
+      const data = await res.json();
+
+      const list = document.getElementById("bookList");
+      list.innerHTML = "";
+
+      data.forEach(book => {
+        const li = document.createElement("li");
+        li.textContent = `${book.title} (Author ID: ${book.authorId})`;
+        list.appendChild(li);
+      });
+    }
+
+    // ADD book
+    async function addBook() {
+      const title = document.getElementById("title").value;
+      const authorId = document.getElementById("authorId").value;
+
+      await fetch(`${API}/books`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ title, authorId })
+      });
+
+      alert("Book added!");
+      getBooks();
+    }
+  </script>
+</body>
+</html>
